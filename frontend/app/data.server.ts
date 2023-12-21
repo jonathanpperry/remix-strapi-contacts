@@ -80,7 +80,8 @@ export async function createContact(data: any) {
     const flattenAttributesData = flattenAttributes(responseData.data);
     return flattenAttributesData;
   } catch (error) {
-    console.error(error);
+    console.log(error);
+    throw new Error("Oh no! Something went wrong!");
   }
 }
 
@@ -95,7 +96,24 @@ export async function getContact(id: string) {
   }
 }
 
-export async function updateContact(id: string, updates: ContactMutation) {}
+export async function updateContactById(id: string, updates: ContactMutation) {
+  try {
+    const response = await fetch(url + "/api/contacts/" + id, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ data: { ...updates} }),
+    });
+    const responseData = await response.json();
+    const flattenAttributesData = flattenAttributes(responseData.data);
+    return flattenAttributesData;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Oh no! Something went wrong!");
+  }
+}
+
 
 export async function deleteContact(id: string) {}
 
