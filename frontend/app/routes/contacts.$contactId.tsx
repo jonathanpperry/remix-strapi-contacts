@@ -8,8 +8,16 @@ import {
 import type { FunctionComponent } from "react";
 import invariant from "tiny-invariant";
 
-import { getContact, type ContactRecord } from "../data.server";
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  getContact,
+  type ContactRecord,
+  updateContactById,
+} from "../data.server";
+import {
+  ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+} from "@remix-run/node";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   invariant(params.contactId, "Missing contactId param");
@@ -19,6 +27,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
   if (!contact) throw new Response("Not Found", { status: 404 });
 
   return json(contact);
+}
+
+export async function action({ params, request }: ActionFunctionArgs) {
+  invariant(params.contactId, "Missing contactId param");
+  const formData = await request.formData();
+  return updateContactById(params.contactId, {
+    favorite: formData.get("favorite") === "true",
+  });
 }
 
 export function ErrorBoundary() {
