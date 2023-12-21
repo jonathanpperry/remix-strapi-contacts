@@ -1,9 +1,15 @@
-import { Form, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+  useNavigate,
+} from "@remix-run/react";
 import type { FunctionComponent } from "react";
+import invariant from "tiny-invariant";
 
 import { getContact, type ContactRecord } from "../data.server";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import invariant from "tiny-invariant";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   invariant(params.contactId, "Missing contactId param");
@@ -13,6 +19,26 @@ export async function loader({ params }: LoaderFunctionArgs) {
   if (!contact) throw new Response("Not Found", { status: 404 });
 
   return json(contact);
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  const navigate = useNavigate();
+  return (
+    <div className="contact-error">
+      <h1>Your contact has left the building.</h1>
+      <p>
+        {isRouteErrorResponse(error)
+          ? `${error.status} ${error.statusText}`
+          : error instanceof Error
+          ? error.message
+          : "Unknown Error"}
+      </p>
+      <div>
+        <button onClick={() => navigate(-1)}>Back to safety</button>
+      </div>
+    </div>
+  );
 }
 
 export default function Contact() {
@@ -56,7 +82,7 @@ export default function Contact() {
           </Form>
 
           <Form
-            action="destroy"
+            action="delete"
             method="post"
             onSubmit={(event) => {
               const response = confirm(

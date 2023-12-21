@@ -1,6 +1,7 @@
 import { json, type LinksFunction } from "@remix-run/node";
 import {
   Form,
+  isRouteErrorResponse,
   Link,
   Links,
   LiveReload,
@@ -9,6 +10,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useRouteError,
 } from "@remix-run/react";
 
 import appStylesHref from "./app.css";
@@ -21,6 +23,31 @@ export const links: LinksFunction = () => [
 export async function loader() {
   const contacts = await getContacts();
   return json(contacts);
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  console.dir(error, { depth: null });
+
+  return (
+    <html>
+      <head>
+        <title>Oops!</title>
+        <Meta />
+        <Links />
+      </head>
+      <body className="root-error">
+        <h1>
+          {isRouteErrorResponse(error)
+            ? `${error.status} ${error.statusText || error.data}`
+            : error instanceof Error
+            ? error.message
+            : "Unknown Error"}
+        </h1>
+        <Scripts />
+      </body>
+    </html>
+  );
 }
 
 export default function App() {
@@ -48,7 +75,9 @@ export default function App() {
               />
               <div id="search-spinner" aria-hidden hidden={true} />
             </Form>
-            <Link to="contacts/create" className="buttonLink">Create</Link>
+            <Link to="contacts/create" className="buttonLink">
+              Create
+            </Link>
           </div>
           <nav>
             {contacts.length ? (

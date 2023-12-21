@@ -103,7 +103,7 @@ export async function updateContactById(id: string, updates: ContactMutation) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ data: { ...updates} }),
+      body: JSON.stringify({ data: { ...updates } }),
     });
     const responseData = await response.json();
     const flattenAttributesData = flattenAttributes(responseData.data);
@@ -114,8 +114,18 @@ export async function updateContactById(id: string, updates: ContactMutation) {
   }
 }
 
-
-export async function deleteContact(id: string) {}
+export async function deleteContact(id: string) {
+  try {
+    const response = await fetch(url + "/api/contacts/" + id, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    const flattenAttributesData = flattenAttributes(data.data);
+    return flattenAttributesData;
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 const data = [
   {
