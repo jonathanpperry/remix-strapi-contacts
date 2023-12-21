@@ -1,4 +1,9 @@
-import { json, type LoaderFunctionArgs, type LinksFunction } from "@remix-run/node";
+import { useEffect } from "react";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type LinksFunction,
+} from "@remix-run/node";
 
 import {
   Form,
@@ -11,7 +16,9 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useNavigation,
   useRouteError,
+  useSubmit,
 } from "@remix-run/react";
 
 import appStylesHref from "./app.css";
@@ -23,10 +30,10 @@ export const links: LinksFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const query = url.searchParams.get("q");
+  const q = url.searchParams.get("q");
   // console.log(url, "from loader");
-  const contacts = await getContacts(query);
-  return json(contacts);
+  const contacts = await getContacts(q);
+  return json({ contacts, q });
 }
 
 export function ErrorBoundary() {
@@ -55,13 +62,25 @@ export function ErrorBoundary() {
 }
 
 export default function App() {
-  const contacts = useLoaderData<typeof loader>();
+  const { contacts, q } = useLoaderData<typeof loader>();
+  const submit = useSubmit();
+  const navigation = useNavigation();
+  const searching =
+    navigation.location &&
+    new URLSearchParams(navigation.location.search).has("q");
+
+  useEffect(() => {
+    const searchField = document.getElementById("q");
+    if (searchField instanceof HTMLInputElement) {
+      searchField.value = q || "";
+    }
+  }, [q]);
 
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=devicde-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
@@ -69,13 +88,24 @@ export default function App() {
         <div id="sidebar">
           <h1>Remix Contacts</h1>
           <div>
-            <Form id="search-form" role="search">
+            <Form
+              id="search-form"
+              role="search"
+              onChange={(event) => {
+                const isFirstSearch = q === null;
+                submit(event?.currentTarget, {
+                  replace: !isFirstSearch,
+                });
+              }}
+            >
               <input
                 id="q"
+                className={searching ? "loading" : ""}
                 aria-label="Search contacts"
                 placeholder="Search"
                 type="search"
                 name="q"
+                defaultValue={q || ""}
               />
               <div id="search-spinner" aria-hidden hidden={true} />
             </Form>
