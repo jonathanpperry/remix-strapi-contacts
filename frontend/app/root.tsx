@@ -1,4 +1,5 @@
-import { json, type LinksFunction } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type LinksFunction } from "@remix-run/node";
+
 import {
   Form,
   isRouteErrorResponse,
@@ -20,8 +21,11 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: appStylesHref },
 ];
 
-export async function loader() {
-  const contacts = await getContacts();
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const query = url.searchParams.get("q");
+  // console.log(url, "from loader");
+  const contacts = await getContacts(query);
   return json(contacts);
 }
 
