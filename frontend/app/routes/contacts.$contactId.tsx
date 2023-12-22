@@ -4,6 +4,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
   useNavigate,
+  useFetcher,
 } from "@remix-run/react";
 import type { FunctionComponent } from "react";
 import invariant from "tiny-invariant";
@@ -14,9 +15,9 @@ import {
   updateContactById,
 } from "../data.server";
 import {
-  ActionFunctionArgs,
-  json,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  json,
 } from "@remix-run/node";
 
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -121,9 +122,10 @@ const Favorite: FunctionComponent<{
   contact: Pick<ContactRecord, "favorite">;
 }> = ({ contact }) => {
   const favorite = contact.favorite;
+  const fetcher = useFetcher();
 
   return (
-    <Form method="post">
+    <fetcher.Form method="post">
       <button
         aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
         name="favorite"
@@ -131,6 +133,6 @@ const Favorite: FunctionComponent<{
       >
         {favorite ? "★" : "☆"}
       </button>
-    </Form>
+    </fetcher.Form>
   );
 };
